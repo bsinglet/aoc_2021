@@ -38,12 +38,12 @@ fn process_lines(result: &Vec<[i32;12]>) -> i32 {
             },
         };
         //println!("Digit {} of gamma rate is {}", index, gamma_rate[index]);
-        //println!("So, increasing final gamma rate by {}", gamma_rate[index] * i32::pow(2, ((12 - (index as i32)) as u32)));
-        final_gamma_rate += gamma_rate[index] * i32::pow(2, ((11 - (index as i32)) as u32));
-        final_epsilon_rate += epsilon_rate[index] * i32::pow(2, ((11 - (index as i32)) as u32));
+        //println!("So, increasing final gamma rate by {}", gamma_rate[index] * i32::pow(2, (12 - (index as i32)) as u32));
+        final_gamma_rate += gamma_rate[index] * i32::pow(2, (11 - (index as i32)) as u32);
+        final_epsilon_rate += epsilon_rate[index] * i32::pow(2, (11 - (index as i32)) as u32);
     }
-    println!("Gamma rate: {:?} = {}", gamma_rate, final_gamma_rate);
-    println!("Epsilon rate: {:?} = {}", epsilon_rate, final_epsilon_rate);
+    println!("Part 1 - Gamma rate: {}", final_gamma_rate);
+    println!("Part 1 - Epsilon rate: {}", final_epsilon_rate);
     final_gamma_rate * final_epsilon_rate
 }
 
