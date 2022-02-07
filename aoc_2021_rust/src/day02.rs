@@ -2,8 +2,7 @@ use std::fs;
 
 const DIRECTION_UP: i32      = 0;
 const DIRECTION_DOWN: i32    = 1;
-const DIRECTION_BACK: i32    = 2;
-const DIRECTION_FORWARD: i32 = 3;
+const DIRECTION_FORWARD: i32 = 2;
 
 fn read_lines(filename: &str) -> Vec<(i32, i32)> {
     let mut result: Vec<(i32, i32)> = Vec::new();
@@ -39,30 +38,29 @@ fn read_lines(filename: &str) -> Vec<(i32, i32)> {
     result
 }
 
-fn process_lines(result: Vec<(i32, i32)>) -> i32 {
+fn process_lines(result: &Vec<(i32, i32)>) -> i32 {
     let mut x = 0;
     let mut y = 0;
     for (direction, magnitude) in result {
         match direction {
-            DIRECTION_UP => y -= magnitude,
-            DIRECTION_DOWN => y += magnitude,
-            DIRECTION_BACK => x -= magnitude,
-            DIRECTION_FORWARD => x += magnitude,
+            0 => y -= magnitude, // up
+            1 => y += magnitude, // down
+            2 => x += magnitude, // forward
             _ => println!("Don't recognize direction {}", direction),
         };
     }
     x * y
 }
 
-fn process_lines_part_two(result: Vec<(i32, i32)>) -> i32 {
+fn process_lines_part_two(result: &Vec<(i32, i32)>) -> i32 {
     let mut x = 0;
     let mut y = 0;
     let mut aim = 0;
     for (direction, magnitude) in result {
         match direction {
-            DIRECTION_UP => aim -= magnitude,
-            DIRECTION_DOWN => aim += magnitude,
-            DIRECTION_FORWARD => {
+            0 => aim -= magnitude, // up
+            1 => aim += magnitude, // down
+            2 => {                 // forward
                 x += magnitude;
                 y += aim * magnitude;
             },
@@ -74,6 +72,6 @@ fn process_lines_part_two(result: Vec<(i32, i32)>) -> i32 {
 
 pub fn main() {
     let result = read_lines("input.txt");
-    println!("Part 1 - The final product of x and y is: {}", process_lines(result));
-    //println!("Part 2 - The final product of x and y is: {}", process_lines_part_two(&result));
+    println!("Part 1 - The final product of x and y is: {}", process_lines(&result));
+    println!("Part 2 - The final product of x and y is: {}", process_lines_part_two(&result));
 }
