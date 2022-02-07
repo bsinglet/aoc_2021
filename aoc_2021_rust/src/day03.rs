@@ -47,8 +47,80 @@ fn process_lines(result: &Vec<[i32;12]>) -> i32 {
     final_gamma_rate * final_epsilon_rate
 }
 
+fn find_most_common(input: &Vec<[i32;12]>, index: usize) -> Vec<[i32;12]> {
+    let (ones, zeroes): (Vec<[i32;12]>, Vec<[i32;12]>) = input
+            .iter()
+            .partition(|&x| x[index] == 1);
+
+    if ones.len() >= zeroes.len() {
+        return ones;
+    }
+    zeroes
+}
+
+fn find_least_common(input: &Vec<[i32;12]>, index: usize) -> Vec<[i32;12]> {
+    let (ones, zeroes): (Vec<[i32;12]>, Vec<[i32;12]>) = input
+            .iter()
+            .partition(|&x| x[index] == 1);
+
+    if zeroes.len() <= ones.len() {
+        return zeroes;
+    }
+    ones
+}
+
+// there's probably a more idiomatic way to do this, but this works well
+fn deep_copy(result: &Vec<[i32;12]>) -> Vec<[i32;12]> {
+    let mut candidates: Vec<[i32;12]> = Vec::new();
+    for each_line in result {
+        let mut digits: [i32;12] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        for (index, value) in each_line.iter().enumerate() {
+            digits[index] = *value;
+        }
+        candidates.push(digits);
+    }
+    candidates
+}
+
+fn bits_array_to_int(input: [i32;12]) -> i32 {
+    let mut result = 0;
+    for index in 0..input.len() {
+        result += input[index] * i32::pow(2, (11 - (index as i32)) as u32);
+    }
+    result
+}
+
+fn find_rating(result: &Vec<[i32;12]>, most_common: bool) -> i32 {
+    // we're going to start with a deep copy of our vector
+    let mut candidates = deep_copy(result);
+
+    // we're going to go narrow down the numbers, one position at a time
+    for index in 0..12 {
+        candidates = match most_common {
+            true => find_most_common(&candidates, index),
+            false => find_least_common(&candidates, index),
+        };
+
+        // we need to quit once we've narrowed it down to only one number
+        if candidates.len() == 1 {
+            break;
+        }
+    }
+
+    // collapse the array of bits into an integer
+    bits_array_to_int(candidates[0])
+}
+
+fn process_lines_part_two(result: &Vec<[i32;12]>) -> i32 {
+    let oxygen_rating = find_rating(&result, true);
+    let co2_rating = find_rating(&result, false);
+    println!("Part 2 - Oxygen rating: {}", oxygen_rating);
+    println!("Part 2 - CO2 rating: {}", co2_rating);
+    oxygen_rating * co2_rating
+}
+
 pub fn main() {
     let result = read_lines("day03_input.txt");
-    //println!("{:?}", result);
     println!("Part 1 - The power consumption of the submarine is {}", process_lines(&result));
+    println!("Part 2 - The life support rating of the submarine is {}", process_lines_part_two(&result));
 }
