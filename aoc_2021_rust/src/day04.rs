@@ -45,7 +45,7 @@ fn find_winners(marked_boards: &Vec<[[bool;5];5]>) -> Vec<i32> {
         }
 
         for each_column in 0..each_board[0].len() {
-            let mut this_column = [each_board[0][each_column],
+            let this_column = [each_board[0][each_column],
                                    each_board[1][each_column],
                                    each_board[2][each_column],
                                    each_board[3][each_column],
@@ -81,22 +81,36 @@ fn find_winners(marked_boards: &Vec<[[bool;5];5]>) -> Vec<i32> {
     winners
 }
 
-fn mark_boards(boards: &Vec<[[i32;5];5]>, mut marked_boards: Vec<[[bool;5];5]>, number: i32) {
+fn mark_boards(boards: &Vec<[[i32;5];5]>, mut marked_boards: Vec<[[bool;5];5]>, number: i32) -> Vec<[[bool;5];5]> {
     for board_index in 0..boards.len() {
         for row in 0..boards[board_index].len() {
-            let column = boards[board_index].iter().find(|&&x| x == number);
-            if column != None {
-                marked_boards[board_index][row][column] = true;
+            for column in 0..boards[board_index][row].len() {
+                if boards[board_index][row][column] == number {
+                    marked_boards[board_index][row][column] = true;
+                }
             }
         }
     }
+    marked_boards
+}
+
+fn get_score(board: [[i32;5];5], marked: [[bool;5];5]) -> i32{
+    let mut score: i32 = 0;
+    for row in 0..board.len() {
+        for column in 0..board.len() {
+            if !marked[row][column] {
+                score += board[row][column];
+            }
+        }
+    }
+    score
 }
 
 fn process_lines(numbers: &Vec<i32>, boards: &Vec<[[i32;5];5]>) -> i32 {
     let mut marked_boards: Vec<[[bool;5];5]> = Vec::new();
     // initialize our tracking of marked spaces on the bingo boards
-    for index in 0..boards.len() {
-        let mut this_board: [[bool;5];5] = [[false, false, false, false, false],
+    for _ in 0..boards.len() {
+        let this_board: [[bool;5];5] = [[false, false, false, false, false],
                                             [false, false, false, false, false],
                                             [false, false, false, false, false],
                                             [false, false, false, false, false],
@@ -108,13 +122,15 @@ fn process_lines(numbers: &Vec<i32>, boards: &Vec<[[i32;5];5]>) -> i32 {
     let mut numbers_called = 0;
     let mut winners = find_winners(&marked_boards);
     while winners.len() == 0 {
-        mark_boards(&boards, marked_boards, numbers[numbers_called]);
+        marked_boards = mark_boards(&boards, marked_boards, numbers[numbers_called]);
         winners = find_winners(&marked_boards);
         numbers_called += 1;
     }
 
-    println!("After {} moves, winning board is number {}", numbers_called, winners[0]);
-    5
+    println!("After {} moves, winning board is number {}", numbers_called-1, winners[0]);
+    let score: i32 = get_score(boards[winners[0] as usize], marked_boards[winners[0] as usize]) * numbers[numbers_called-1 as usize];
+    println!("The score of board {} is {}", winners[0], score);
+    score
 }
 
 pub fn main() {
