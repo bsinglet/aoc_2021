@@ -32,9 +32,12 @@ fn read_lines(filename: &str) -> (Vec<i32>, Vec<[[i32;5];5]>) {
     (numbers, boards)
 }
 
-fn find_winners(marked_boards: &Vec<[[bool;5];5]>) -> Vec<i32> {
-    let mut winners: Vec<i32> = Vec::new();
+fn find_winners(marked_boards: &Vec<[[bool;5];5]>, mut winners: Vec<i32>) -> Vec<i32> {
     for (board_number, each_board) in marked_boards.iter().enumerate() {
+        // ignore boards that are already winners
+        if winners.contains(&(board_number as i32)) {
+            continue;
+        }
         // check rows, columns, and diagonals for any five trues in a row
         for each_row in each_board {
             if each_row.iter().all(|&x| x == true) {
@@ -86,6 +89,45 @@ fn find_winners(marked_boards: &Vec<[[bool;5];5]>) -> Vec<i32> {
     winners
 }
 
+#[test]
+fn test_find_winners_empty() {
+    let marked_boards: Vec<[[bool;5];5]> = Vec::new();
+    assert_eq!(find_winners(&marked_boards).len(), 0);
+}
+
+#[test]
+fn test_find_winners_none() {
+    let mut marked_boards: Vec<[[bool;5];5]> = Vec::new();
+    marked_boards.push([[false, false, false, false, false],
+                                        [true, true, true, false, true],
+                                        [false, false, false, false, false],
+                                        [false, false, false, false, false],
+                                        [false, false, false, false, false]]);
+    assert_eq!(find_winners(&marked_boards).len(), 0);
+}
+
+#[test]
+fn test_find_winners_horizontal() {
+    let mut marked_boards: Vec<[[bool;5];5]> = Vec::new();
+    marked_boards.push([[false, false, false, false, false],
+                                        [true, true, true, true, true],
+                                        [false, false, false, false, false],
+                                        [false, false, false, false, false],
+                                        [false, false, false, false, false]]);
+    assert_eq!(find_winners(&marked_boards)[0], 0);
+}
+
+#[test]
+fn test_find_winners_vertical() {
+    let mut marked_boards: Vec<[[bool;5];5]> = Vec::new();
+    marked_boards.push([[false, true, false, false, false],
+                                        [true, true, false, true, true],
+                                        [false, true, false, false, false],
+                                        [false, true, false, false, false],
+                                        [false, true, false, false, false]]);
+    assert_eq!(find_winners(&marked_boards)[0], 0);
+}
+
 fn mark_boards(boards: &Vec<[[i32;5];5]>, mut marked_boards: Vec<[[bool;5];5]>, number: i32) -> Vec<[[bool;5];5]> {
     for board_index in 0..boards.len() {
         for row in 0..boards[board_index].len() {
@@ -125,16 +167,15 @@ fn process_lines(numbers: &Vec<i32>, boards: &Vec<[[i32;5];5]>) -> i32 {
 
     // iterate through the called numbers until one board wins
     let mut numbers_called = 0;
-    let mut winners = find_winners(&marked_boards);
+    let mut winners = find_winners(&marked_boards, Vec::<i32>::new());
     while winners.len() == 0 {
         marked_boards = mark_boards(&boards, marked_boards, numbers[numbers_called]);
-        winners = find_winners(&marked_boards);
+        winners = find_winners(&marked_boards, winners);
         numbers_called += 1;
     }
 
-    println!("After {} moves, winning board is number {}", numbers_called-1, winners[0]);
     let score: i32 = get_score(boards[winners[0] as usize], marked_boards[winners[0] as usize]) * numbers[numbers_called-1 as usize];
-    println!("The score of board {} is {}", winners[0], score);
+    println!("After {} moves, winning board is number {}, with a score of {}", numbers_called-1, winners[0], score);
     score
 }
 
@@ -152,23 +193,24 @@ fn process_lines_part_two(numbers: &Vec<i32>, boards: &Vec<[[i32;5];5]>) -> i32 
 
     // iterate through the called numbers until one board wins
     let mut numbers_called = 0;
-    let mut winners = find_winners(&marked_boards);
+    let mut winners = find_winners(&marked_boards, Vec::<i32>::new());
     while winners.len() < boards.len() {
         marked_boards = mark_boards(&boards, marked_boards, numbers[numbers_called]);
-        winners = find_winners(&marked_boards);
+        winners = find_winners(&marked_boards, winners);
         //println!("At step {}, there are {} winning boards out of {}.", numbers_called, winners.len(), marked_boards.len());
         numbers_called += 1;
     }
 
     let winner = winners.pop().unwrap();
-    println!("After {} moves, winning board is number {}", numbers_called-1, winner);
     let score: i32 = get_score(boards[winner as usize], marked_boards[winner as usize]) * numbers[numbers_called-1 as usize];
-    println!("The score of board {} is {}", winner, score);
+    println!("After {} moves, winning board is number {}, with a score of {}", numbers_called-1, winner, score);
+    //println!("Move sequence was {:#?}", &numbers.iter().take(numbers_called));
+    //println!("Winning board was marked {:#?}", &marked_boards[winner as usize]);
     score
 }
 
 pub fn main() {
     let (numbers, boards) = read_lines("day04_input.txt");
-    println!("Part 1 - The final score will be {}", process_lines(&numbers, &boards));
+    println!("Part 1 - The final score will be {}\n", process_lines(&numbers, &boards));
     println!("Part 2 - The final score will be {}", process_lines_part_two(&numbers, &boards));
 }
