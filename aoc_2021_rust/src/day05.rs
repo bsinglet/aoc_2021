@@ -64,17 +64,92 @@ fn plot_points(mut points: HashMap<(i32, i32), i32>, segment: &LineSegment) -> H
     points
 }
 
+fn plot_points_part_two(mut points: HashMap<(i32, i32), i32>, segment: &LineSegment) -> HashMap<(i32, i32), i32> {
+    // vertical line
+    if segment.start_x == segment.end_x {
+        let mut start_y = segment.start_y;
+        let mut end_y = segment.end_y;
+        if segment.start_y > segment.end_y {
+            start_y = segment.end_y;
+            end_y = segment.start_y;
+        }
+        for y in start_y..end_y+1 {
+            if let Some(value) = points.get_mut(&(segment.start_x, y)) {
+                *value = *value + 1;
+            }else {
+                points.insert((segment.start_x, y), 1);
+            }
+        }
+    // horizontal line
+    } else if segment.start_y == segment.end_y {
+        let mut start_x = segment.start_x;
+        let mut end_x = segment.end_x;
+        if segment.start_x > segment.end_x {
+            start_x = segment.end_x;
+            end_x = segment.start_x;
+        }
+        for x in start_x..end_x+1 {
+            if let Some(value) = points.get_mut(&(x, segment.start_y)) {
+                *value = *value + 1;
+            }else {
+                points.insert((x, segment.start_y), 1);
+            }
+        }
+    // diagonal line
+    } else {
+        let mut x_direction = 1;
+        let mut y_direction = 1;
+        if segment.start_x > segment.end_x {
+            x_direction = -1;
+        }
+        if segment.start_y > segment.end_y {
+            y_direction = -1;
+        }
+        for increment in 0..(x_direction * (segment.end_x - segment.start_x) + 1) {
+            if let Some(value) = points.get_mut(&
+                (segment.start_x + (x_direction * increment),
+                    segment.start_y + (y_direction * increment))) {
+                *value = *value + 1;
+            }else {
+                points.insert((segment.start_x + (x_direction * increment),
+                    segment.start_y + (y_direction * increment)), 1);
+            }
+        }
+    }
+    points
+}
+
+fn _render_points(max_x: i32, max_y: i32, points: HashMap<(i32, i32), i32>) {
+    for y in 0..max_y {
+        for x in 0..max_x {
+            if let Some(value) = points.get(&(x, y)) {
+                print!("{}", *value);
+            } else {
+                print!("0");
+            }
+        }
+        println!("");
+    }
+}
+
 fn process_lines(line_segments: &Vec<LineSegment>) -> i32 {
     let mut points = HashMap::<(i32, i32), i32>::new();
     for each_segment in line_segments {
         points = plot_points(points, &each_segment);
     }
-    //println!("{:#?}", points);
+    points.values().filter(|&&x| x > 1).count().try_into().unwrap()
+}
+
+fn process_lines_part_two(line_segments: &Vec<LineSegment>) -> i32 {
+    let mut points = HashMap::<(i32, i32), i32>::new();
+    for each_segment in line_segments {
+        points = plot_points_part_two(points, &each_segment);
+    }
     points.values().filter(|&&x| x > 1).count().try_into().unwrap()
 }
 
 pub fn main() {
     let line_segments = read_lines("day05_input.txt");
-    println!("Part 1 - The number of points where at least two lines cross is {}\n", process_lines(&line_segments));
-    //println!("Part 2 - The final score will be {}", process_lines_part_two(&numbers, &boards));
+    println!("Part 1 - The number of points where at least two lines cross is {}", process_lines(&line_segments));
+    println!("Part 2 - The number of points where at least two lines cross is {}", process_lines_part_two(&line_segments));
 }
