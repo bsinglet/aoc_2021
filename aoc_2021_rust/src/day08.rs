@@ -1,5 +1,4 @@
 use std::fs;
-use std::str::FromStr;
 
 fn read_lines(filename: &str) -> Vec<String> {
     let contents = fs::read_to_string(filename)
@@ -49,6 +48,13 @@ fn process_lines(digits: &Vec<String>) -> i64 {
             .count() as i64;
     }
     total_count
+}
+
+fn process_lines_part_two(digits: &Vec<String>) -> i64 {
+    let digit_lines = digits.clone();
+    let mut total_sum: i64 = 0;
+    let mut Vec<i64> four_digits = Vec::new();
+
 }
 
 pub fn main() {
